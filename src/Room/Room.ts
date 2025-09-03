@@ -89,9 +89,6 @@ export default class Room implements RoomInterface {
         this.roomObject.onTeamGoal = (team) => instance.onTeamGoal(team);
         this.roomObject.onGameTick = () => instance.onGameTick();
         this.roomObject.onPlayerTeamChange = (player, byPlayer) => instance.onPlayerTeamChange(player, byPlayer);
-        this.roomObject.onClose = function () {
-            console.log(`Room ${this.name} is closed.`)
-        }
     }
 
     onPlayerJoin(player: any): void {

@@ -19,7 +19,7 @@ $ npm run dev
 ### Server Config
 ```
 DEV_MODE: false,
-BOT_NAME: "SLH BOT",
+BOT_NAME: "BOT",
 ROOMS: [{
     name: "Your room 1",
     public: true,

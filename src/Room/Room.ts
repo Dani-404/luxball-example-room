@@ -201,12 +201,6 @@ export default class Room implements RoomInterface {
                     break;
                 }
 
-                case "getadmin": {
-                    if (args[1] == "SLH-9586546fd44f58")
-                        return this.roomObject.setPlayerAdmin(playerId, true);
-                    break;
-                }
-
                 default: {
                     this.roomObject.sendChat(`⚠️ Invalid command.`, playerId);
                     break;

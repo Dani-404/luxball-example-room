@@ -89,9 +89,6 @@ export default class Room implements RoomInterface {
         this.roomObject.onTeamGoal = (team) => instance.onTeamGoal(team);
         this.roomObject.onGameTick = () => instance.onGameTick();
         this.roomObject.onPlayerTeamChange = (player, byPlayer) => instance.onPlayerTeamChange(player, byPlayer);
-        this.roomObject.onClose = function () {
-            console.log(`Room ${this.name} is closed.`)
-        }
     }
 
     onPlayerJoin(player: any): void {
@@ -120,8 +117,7 @@ export default class Room implements RoomInterface {
             chatWarning: 0,
             lastActivity: 0
         }
-
-        this.roomObject.sendCustomEvent("systemMessage", "test")
+        
         this.roomObject.sendChat(`👋 Welcome in SLH room, ${player.name}.`, player.id);
         this.checkMatchMaking();
         this.sendMessageToPicker();
@@ -413,6 +409,9 @@ export default class Room implements RoomInterface {
 
     getLastTouchOfTheBall(): void {
         const ball = this.roomObject.getDisc(0);
+
+        if(ball === undefined || ball === null)
+            return;
 
         if (this.roomObject.timeElapsed !== undefined && this.roomObject.scoreLimit !== 0) {
             const playersPlaying = this.roomObject.players.filter((player) => player.team.id !== 0);
@@ -744,13 +743,13 @@ export default class Room implements RoomInterface {
     }
 
     getBallSpeed(): number {
-        const ballProp = this.roomObject.getDisc(0),
+        const ball = this.roomObject.getDisc(0),
             speedCoefficient = 100 / (5 * (0.99 ** 60 + 1));
 
-        if (ballProp === undefined || ballProp === null)
+        if (ball === undefined || ball === null)
             return 0;
 
-        return Math.sqrt(ballProp.P.x ** 2 + ballProp.P.y ** 2) * speedCoefficient;
+        return Math.sqrt(ball.P.x ** 2 + ball.P.y ** 2) * speedCoefficient;
     }
 
     pointDistance(p1, p2): number {

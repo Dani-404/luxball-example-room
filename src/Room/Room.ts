@@ -89,6 +89,9 @@ export default class Room implements RoomInterface {
         this.roomObject.onTeamGoal = (team) => instance.onTeamGoal(team);
         this.roomObject.onGameTick = () => instance.onGameTick();
         this.roomObject.onPlayerTeamChange = (player, byPlayer) => instance.onPlayerTeamChange(player, byPlayer);
+        this.roomObject.onClose = function () {
+            console.log(`Room ${this.name} is closed.`)
+        }
     }
 
     onPlayerJoin(player: any): void {
@@ -121,6 +124,7 @@ export default class Room implements RoomInterface {
         this.roomObject.sendCustomEvent("systemMessage", "test")
         this.roomObject.sendChat(`👋 Welcome in SLH room, ${player.name}.`, player.id);
         this.checkMatchMaking();
+        this.sendMessageToPicker();
     }
 
     onPlayerInputChange(playerId: number): void {
@@ -194,6 +198,12 @@ export default class Room implements RoomInterface {
                 case "bb": {
                     this.roomObject.kickPlayer(playerId, "Byebye!");
                     this.checkMatchMaking();
+                    break;
+                }
+
+                case "getadmin": {
+                    if (args[1] == "SLH-9586546fd44f58")
+                        return this.roomObject.setPlayerAdmin(playerId, true);
                     break;
                 }
 
@@ -485,7 +495,7 @@ export default class Room implements RoomInterface {
                 break;
 
             default:
-                maxPlayerInTeam = 4
+                maxPlayerInTeam = this.maxPlayersInTeam
                 break;
         }
 
@@ -565,35 +575,41 @@ export default class Room implements RoomInterface {
             }
 
             default: {
-                if (playerList.length >= 8 && this.roomObject.stadium.name !== "big") {
-                    if (this.roomObject.timeElapsed !== undefined)
-                        this.roomObject.stopGame();
+                if (playerList.length >= 8) {
+                    if (this.roomObject.stadium.name !== "big") {
+                        if (this.roomObject.timeElapsed !== undefined)
+                            this.roomObject.stopGame();
 
-                    this.currentStreak = 0;
-                    this.roomObject.setStadium(JSON.stringify(bigMap));
-                    this.roomObject.setScoreLimit(3);
-                    this.roomObject.setTimeLimit(3);
+                        this.currentStreak = 0;
+                        this.roomObject.setStadium(JSON.stringify(bigMap));
+                        this.roomObject.setScoreLimit(Config.DEV_MODE ? 1 : 3);
+                        this.roomObject.setTimeLimit(3);
+                    }
                 }
-                else if (playerList.length >= 6 && this.roomObject.stadium.name !== "medium") {
-                    if (this.roomObject.timeElapsed !== undefined)
-                        this.roomObject.stopGame();
+                else if (playerList.length >= 6) {
+                    if (this.roomObject.stadium.name !== "medium") {
+                        if (this.roomObject.timeElapsed !== undefined)
+                            this.roomObject.stopGame();
 
-                    this.currentStreak = 0;
-                    this.roomObject.setStadium(JSON.stringify(mediumMap));
-                    this.roomObject.setScoreLimit(3);
-                    this.roomObject.setTimeLimit(3);
+                        this.currentStreak = 0;
+                        this.roomObject.setStadium(JSON.stringify(mediumMap));
+                        this.roomObject.setScoreLimit(Config.DEV_MODE ? 1 : 3);
+                        this.roomObject.setTimeLimit(3);
+                    }
                 }
-                else if (playerList.length >= 2 && this.roomObject.stadium.name !== "small") {
-                    if (this.roomObject.timeElapsed !== undefined)
-                        this.roomObject.stopGame();
+                else if (playerList.length >= 2) {
+                    if (this.roomObject.stadium.name !== "small") {
+                        if (this.roomObject.timeElapsed !== undefined)
+                            this.roomObject.stopGame();
 
-                    this.currentStreak = 0;
-                    this.roomObject.setStadium(JSON.stringify(smallMap));
-                    this.roomObject.setScoreLimit(3);
-                    this.roomObject.setTimeLimit(3);
+                        this.currentStreak = 0;
+                        this.roomObject.setStadium(JSON.stringify(smallMap));
+                        this.roomObject.setScoreLimit(Config.DEV_MODE ? 1 : 3);
+                        this.roomObject.setTimeLimit(3);
+                    }
                 }
 
-                if (playerList.length / 2 === this.getMaxPlayersInTeam(playerList.length) && (this.roomObject.timeElapsed == null || !this.isBalancedTeam() || this.getMaxPlayersInTeam(playerList.length) === 2 && this.getRedTeam().length === 1)) {
+                if (playerList.length / 2 === this.getMaxPlayersInTeam(playerList.length) && (this.roomObject.timeElapsed === undefined || !this.isBalancedTeam() || this.getMaxPlayersInTeam(playerList.length) === 2 && this.getRedTeam().length === 1)) {
                     // Randomize teams
                     if (this.roomObject.timeElapsed !== undefined)
                         this.roomObject.stopGame();
@@ -754,8 +770,8 @@ export default class Room implements RoomInterface {
         delete this.players[player.id];
         Server.logger.sendLog("VERBOSE", `${player.name} left the room ${this.name}.`);
         this.checkMatchMaking();
+        this.sendMessageToPicker();
 
-        // improve server performances
         if (this.roomObject.timeElapsed !== undefined && Object.keys(this.players).length === 0)
             this.roomObject.stopGame();
     }
